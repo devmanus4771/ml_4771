@@ -1,0 +1,44 @@
+#if error --- pip install --upgrade matplotlib
+
+
+
+
+# Importing necessary libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import LabelEncoder
+
+# Step 1: Load the Iris dataset
+iris = load_iris()
+X = iris.data  # Features (sepal length, sepal width, petal length, petal width)
+y = iris.target  # Labels (species)
+
+# Step 2: Convert categorical labels (species) into numeric using LabelEncoder
+label_encoder = LabelEncoder()
+y_encoded = label_encoder.fit_transform(iris.target_names[y])  # Convert species names to numeric labels
+
+# Step 3: Create a DataFrame for easy plotting
+df = pd.DataFrame(X, columns=iris.feature_names)
+df['Species'] = y_encoded  # Add numeric species labels to the DataFrame
+
+# Step 4: Create a scatter plot (using the first two features: Sepal length and Sepal width)
+fig, ax = plt.subplots(figsize=(8, 6))
+scatter = ax.scatter(df['sepal length (cm)'], df['sepal width (cm)'], c=df['Species'], cmap='viridis', edgecolor='k', s=100)
+ax.set_xlabel('Sepal Length (cm)')
+ax.set_ylabel('Sepal Width (cm)')
+ax.set_title('Scatter Plot of Iris Dataset (Sepal Length vs Sepal Width)')
+
+# Add a color bar with species names
+plt.colorbar(scatter, label='Species')
+plt.show()
+
+# If you want to plot using different feature combinations, you can repeat the process:
+# Example: Petal Length vs Petal Width
+fig, ax = plt.subplots(figsize=(8, 6))
+scatter = ax.scatter(df['petal length (cm)'], df['petal width (cm)'], c=df['Species'], cmap='viridis', edgecolor='k', s=100)
+ax.set_xlabel('Petal Length (cm)')
+ax.set_ylabel('Petal Width (cm)')
+ax.set_title('Scatter Plot of Iris Dataset (Petal Length vs Petal Width)')
+plt.colorbar(scatter, label='Species')
+plt.show()

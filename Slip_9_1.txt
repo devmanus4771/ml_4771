@@ -1,0 +1,71 @@
+#csv --
+
+import pandas as pd
+from sklearn.datasets import load_boston
+
+# Load the Boston Housing dataset
+boston = load_boston()
+
+# Create a DataFrame from the data
+df = pd.DataFrame(boston.data, columns=boston.feature_names)
+
+# Add the target variable (Price) to the DataFrame
+df['Price'] = boston.target
+
+# Select only 'RM' (rooms) and 'Price' columns
+df = df[['RM', 'Price']]
+
+# Save the DataFrame as a CSV file
+df.to_csv('boston_houses.csv', index=False)
+
+print("boston_houses.csv has been created successfully!")
+
+
+
+#main code 
+
+# Importing necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Ridge, Lasso
+from sklearn.metrics import mean_squared_error
+
+# Step 1: Load the Boston Housing dataset
+# Assuming 'boston_houses.csv' is in the current directory
+df = pd.read_csv('boston_houses.csv')
+
+# Step 2: Select only 'RM' (average rooms) and 'Price' (target variable)
+df = df[['RM', 'Price']]
+
+# Step 3: Split the data into training and testing datasets
+X = df[['RM']]  # Features (number of rooms)
+y = df['Price']  # Target variable (house price)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Fit Ridge Regression model
+ridge_model = Ridge(alpha=1.0)  # Alpha is the regularization strength
+ridge_model.fit(X_train, y_train)
+
+# Step 5: Fit Lasso Regression model
+lasso_model = Lasso(alpha=0.1)  # Alpha is the regularization strength
+lasso_model.fit(X_train, y_train)
+
+# Step 6: Predict house price for a house with 5 rooms
+rooms = 5
+ridge_price = ridge_model.predict([[rooms]])[0]
+lasso_price = lasso_model.predict([[rooms]])[0]
+
+# Step 7: Evaluate the models using Mean Squared Error (MSE) on the test set
+ridge_predictions = ridge_model.predict(X_test)
+lasso_predictions = lasso_model.predict(X_test)
+
+ridge_mse = mean_squared_error(y_test, ridge_predictions)
+lasso_mse = mean_squared_error(y_test, lasso_predictions)
+
+# Step 8: Display the results
+print(f"Ridge Regression predicted price for a house with 5 rooms: ${ridge_price:.2f}")
+print(f"Lasso Regression predicted price for a house with 5 rooms: ${lasso_price:.2f}")
+
+print(f"\nRidge Regression MSE on test set: {ridge_mse:.2f}")
+print(f"Lasso Regression MSE on test set: {lasso_mse:.2f}")

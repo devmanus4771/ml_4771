@@ -1,0 +1,42 @@
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Step 1: Load the dataset
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00292/Wholesale%20customers%20data.csv"
+df = pd.read_csv(url)
+
+# Step 2: Data Preprocessing (Optional: Dropping 'Channel' and 'Region' columns if you want to focus purely on spending)
+df = df.drop(columns=['Channel', 'Region'])
+
+# Step 3: Standardize the features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(df)
+
+# Step 4: Perform Agglomerative Clustering
+# Use metric='euclidean' instead of affinity='euclidean'
+agg_clustering = AgglomerativeClustering(n_clusters=3, metric='euclidean', linkage='ward')
+df['Cluster'] = agg_clustering.fit_predict(X_scaled)
+
+# Step 5: Visualize the Dendrogram
+plt.figure(figsize=(10, 7))
+plt.title("Dendrogram for Agglomerative Clustering")
+linked = linkage(X_scaled, method='ward')
+dendrogram(linked)
+plt.show()
+
+# Step 6: Visualize the Clusters
+plt.figure(figsize=(10, 6))
+scatter = sns.scatterplot(x=df['Fresh'], y=df['Grocery'], hue=df['Cluster'], palette='viridis', s=100)
+scatter.set_xlabel('Annual Spending on Fresh Products')
+scatter.set_ylabel('Annual Spending on Grocery Products')
+plt.title('Agglomerative Clustering of Clients Based on Annual Spending')
+plt.show()
+
+
+# Step 7: Print the resulting clusters
+print("Cluster assignments:")
+print(df[['Cluster']])

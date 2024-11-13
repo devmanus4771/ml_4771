@@ -1,0 +1,61 @@
+#csv -- save in text editor as .csv
+
+CRIM,ZN,INDUS,CHAS,NIT,RM,AGE,DIS,rad,TAX,PTRATIO,BTM,MA,MEDV
+0.00632,18.0,2.31,0.0,0.538,6.575,65.2,4.09,1,296.0,15.3,396.9,9.4,24.0
+0.02731,0.0,7.87,0.0,0.469,6.421,78.9,4.97,2,242.0,17.8,396.9,9.4,21.6
+0.02729,0.0,7.87,0.0,0.469,7.185,61.1,4.37,2,242.0,17.8,392.8,9.4,34.7
+0.03237,0.0,2.18,0.0,0.458,6.998,45.8,6.06,3,222.0,18.7,394.7,9.4,33.4
+0.06905,0.0,2.18,0.0,0.458,7.147,54.2,6.06,3,222.0,18.7,396.9,9.4,36.2
+
+
+
+# main code 
+
+# Importing necessary libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_boston
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Step 1: Load the Boston Housing dataset
+boston = load_boston()
+X = boston.data  # Features
+y = boston.target  # Target variable: Median value of houses
+
+# Step 2: Split the dataset into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 3: Feature transformation (Polynomial features)
+# Polynomial degree (You can experiment with this value)
+degree = 3
+poly = PolynomialFeatures(degree=degree)
+
+# Transform the training and testing data into polynomial features
+X_train_poly = poly.fit_transform(X_train)
+X_test_poly = poly.transform(X_test)
+
+# Step 4: Initialize and train the Polynomial Regression model
+model = LinearRegression()
+model.fit(X_train_poly, y_train)
+
+# Step 5: Make predictions using the trained model
+y_pred = model.predict(X_test_poly)
+
+# Step 6: Evaluate the model
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+print(f"Mean Squared Error: {mse}")
+print(f"R-squared: {r2}")
+
+# Step 7: Visualize the results (if needed for specific feature comparison)
+# Visualize the actual vs predicted values (Here, we're using a scatter plot)
+plt.scatter(y_test, y_pred)
+plt.xlabel('Actual Housing Prices')
+plt.ylabel('Predicted Housing Prices')
+plt.title('Actual vs Predicted Housing Prices (Polynomial Regression)')
+plt.show()

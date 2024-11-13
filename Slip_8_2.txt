@@ -1,0 +1,62 @@
+# Importing necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.preprocessing import LabelEncoder
+from sklearn import tree
+import matplotlib.pyplot as plt
+
+# Step 1: Load the weather forecast dataset (Example dataset)
+data = {
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain', 'Overcast', 'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast', 'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Cool', 'Cool', 'Mild', 'Mild', 'Cool', 'Mild', 'Mild', 'Mild', 'Hot', 'Mild'],
+    'Humidity': ['High', 'High', 'High', 'High', 'High', 'Low', 'Low', 'High', 'Low', 'Low', 'Low', 'High', 'Low', 'Low'],
+    'Wind': ['Weak', 'Strong', 'Weak', 'Weak', 'Weak', 'Weak', 'Strong', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak', 'Strong', 'Weak'],
+    'PlayTennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'No', 'Yes']
+}
+
+# Convert the data into a DataFrame
+df = pd.DataFrame(data)
+
+# Step 2: Encode categorical data into numeric values
+label_encoder = LabelEncoder()
+
+# Encoding the columns: 'Outlook', 'Temperature', 'Humidity', 'Wind', 'PlayTennis'
+df['Outlook'] = label_encoder.fit_transform(df['Outlook'])
+df['Temperature'] = label_encoder.fit_transform(df['Temperature'])
+df['Humidity'] = label_encoder.fit_transform(df['Humidity'])
+df['Wind'] = label_encoder.fit_transform(df['Wind'])
+df['PlayTennis'] = label_encoder.fit_transform(df['PlayTennis'])
+
+# Step 3: Split the dataset into features (X) and target variable (y)
+X = df.drop('PlayTennis', axis=1)
+y = df['PlayTennis']
+
+# Step 4: Split the dataset into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 5: Initialize and train the Decision Tree model
+dt_model = DecisionTreeClassifier(random_state=42)
+dt_model.fit(X_train, y_train)
+
+# Step 6: Make predictions on the test data
+y_pred = dt_model.predict(X_test)
+
+# Step 7: Evaluate the model's performance
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+# Displaying the results
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("\nConfusion Matrix:")
+print(conf_matrix)
+print("\nClassification Report:")
+print(class_report)
+
+# Step 8: Visualize the Decision Tree
+plt.figure(figsize=(12,8))
+tree.plot_tree(dt_model, feature_names=X.columns, class_names=['No', 'Yes'], filled=True, rounded=True)
+plt.title("Decision Tree for PlayTennis Prediction")
+plt.show()

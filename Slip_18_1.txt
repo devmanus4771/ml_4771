@@ -1,0 +1,96 @@
+#Dependencies:
+Make sure you have the required libraries installed:
+
+
+pip install pandas numpy matplotlib scikit-learn
+
+#dataset
+You can copy and save this content into a CSV file (diabetes.csv) on your local system and load it using pandas.read_csv() in your Python code.
+
+Pregnancies,Glucose,BloodPressure,SkinThickness,Insulin,BMI,DiabetesPedigreeFunction,Age,Outcome
+6,148,72,35,0,33.6,0.627,50,1
+1,85,66,29,0,26.6,0.351,31,0
+8,183,64,0,0,23.3,0.672,32,1
+1,89,66,23,94,28.1,0.167,21,0
+0,137,40,35,168,43.1,2.288,33,1
+5,116,74,0,0,25.6,0.201,30,0
+3,78,50,32,88,31.2,0.248,26,0
+10,115,0,0,0,35.3,0.134,29,0
+2,197,70,45,543,30.5,0.158,53,1
+8,125,96,0,0,39.0,0.263,59,1
+4,110,92,0,0,37.6,0.191,41,0
+4,99,72,0,0,34.2,0.292,33,0
+7,196,90,0,0,39.8,0.485,27,1
+2,122,76,0,0,38.0,0.208,45,0
+5,168,74,0,0,43.8,0.551,41,1
+3,105,80,0,0,32.9,0.171,28,0
+1,101,72,0,0,36.3,0.258,22,0
+6,109,75,26,0,36.7,0.254,38,1
+
+
+
+#main code 
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+# Step 1: Load the Diabetes dataset (using an example CSV file)
+# Replace 'diabetes.csv' with the path to your dataset
+df = pd.read_csv('diabetes.csv')
+
+# Step 2: Check for null values and handle them if necessary
+print("Missing values in the dataset:")
+print(df.isnull().sum())
+
+# Step 3: Preprocess the data - Normalize/Scale the features (optional, but important for K-Means)
+# We'll use StandardScaler to scale the features
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(df)
+
+# Step 4: Apply K-Means Clustering
+# Let's start by choosing the number of clusters as 2 (diabetes vs. no diabetes)
+kmeans = KMeans(n_clusters=2, random_state=42)
+
+# Fit the KMeans model
+kmeans.fit(scaled_data)
+
+# Step 5: Get the cluster centers and assign labels
+cluster_centers = kmeans.cluster_centers_
+labels = kmeans.labels_
+
+# Step 6: Add the predicted labels (clusters) to the original DataFrame
+df['Cluster'] = labels
+
+# Step 7: Visualize the clusters (using 2D scatter plot for simplicity)
+# Here we use the first two columns for visualization (adjust as needed)
+plt.figure(figsize=(8, 6))
+plt.scatter(df.iloc[:, 0], df.iloc[:, 1], c=labels, cmap='viridis', edgecolor='k', s=100)
+plt.title('K-Means Clustering on Diabetes Dataset')
+plt.xlabel('Feature 1 (e.g., Pregnancies)')
+plt.ylabel('Feature 2 (e.g., Glucose)')
+plt.colorbar()
+plt.show()
+
+# Step 8: Evaluate the clustering performance using silhouette score
+sil_score = silhouette_score(scaled_data, labels)
+print(f"Silhouette Score for the clustering: {sil_score}")
+
+# Step 9: You can also try different values of k (number of clusters) and check the results
+# Elbow method to find the optimal k value (number of clusters)
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_data)
+    inertia.append(kmeans.inertia_)
+
+# Plot inertia to visualize the elbow method
+plt.figure(figsize=(8, 6))
+plt.plot(range(1, 11), inertia, marker='o')
+plt.title('Elbow Method to Determine Optimal K')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia')
+plt.show()

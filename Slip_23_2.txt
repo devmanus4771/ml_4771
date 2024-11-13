@@ -1,0 +1,27 @@
+import pandas as pd
+
+# Sample dataset
+data = {
+    'ID': [1, 2, 3, 4, 5],
+    'Age': [25, None, 30, 22, None],
+    'Name': ['Alice', 'Bob', 'Charlie', 'David', 'Eva'],
+    'Salary': [50000, None, 55000, 60000, 65000]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# Show the original DataFrame
+print("Original DataFrame:")
+print(df)
+
+# Check for null values
+print("\nNull values in each column:")
+print(df.isnull().sum())
+
+# Remove rows with null values
+df_cleaned = df.dropna()
+
+# Show the cleaned DataFrame
+print("\nDataFrame after removing rows with null values:")
+print(df_cleaned)

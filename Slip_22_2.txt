@@ -1,0 +1,49 @@
+#install 
+!pip install mlxtend==0.22.0
+
+#check
+import mlxtend
+print(mlxtend.__version__)  # Should be 0.22.0
+
+
+
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Sample dataset
+data = {
+    'TransactionID': [1, 2, 3, 4, 5, 6],
+    'Items': [
+        ['milk', 'bread', 'butter'],
+        ['bread', 'butter'],
+        ['milk', 'bread'],
+        ['butter', 'milk'],
+        ['bread', 'butter', 'milk'],
+        ['butter', 'milk']
+    ]
+}
+
+# Create DataFrame
+df = pd.DataFrame(data)
+
+# One-hot encoding
+df_expanded = df['Items'].str.join('|').str.get_dummies().astype(bool)
+
+# Apply Apriori algorithm
+frequent_itemsets = apriori(df_expanded, min_support=0.25, use_colnames=True)
+
+# Generate association rules
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.25)
+
+print("Frequent Itemsets:\n", frequent_itemsets)
+print("\nAssociation Rules:\n", rules)
+
+# Visualization
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x='support', y='confidence', size='lift', data=rules, legend=False, sizes=(20, 200))
+plt.title('Support vs Confidence')
+plt.xlabel('Support')
+plt.ylabel('Confidence')
+plt.show()

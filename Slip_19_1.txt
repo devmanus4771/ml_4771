@@ -1,0 +1,86 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import mean_squared_error
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+
+# Load the dataset
+df = pd.read_csv('/content/position.csv')
+
+# Display the first few rows of the dataset
+print(df.head())
+
+# Assuming the dataset has columns 'Position_Level' and 'Salary'
+# Define features (X) and target variable (y)
+# Encode the 'Position' column
+label_encoder = LabelEncoder()
+df['Position_Level'] = label_encoder.fit_transform(df['Position'])
+# Define features (X) and target variable (y)
+X = df[['Position_Level']].values
+y = df['Salary'].values
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+# Fit a simple linear regression model
+simple_model = LinearRegression()
+simple_model.fit(X_train, y_train)
+
+# Predict using the simple linear regression model
+y_pred_simple = simple_model.predict(X_test)
+
+# Calculate the mean squared error for the simple model
+mse_simple = mean_squared_error(y_test, y_pred_simple)
+print(f"Mean Squared Error for Simple Linear Regression: {mse_simple:.2f}")
+
+# Fit a polynomial linear regression model
+poly_features = PolynomialFeatures(degree=4)  # Degree of polynomial features
+X_poly = poly_features.fit_transform(X)
+
+# Split the polynomial features into training and testing sets
+X_poly_train, X_poly_test, y_train, y_test = train_test_split(X_poly, y, test_size=0.2, random_state=0)
+
+# Fit the polynomial regression model
+poly_model = LinearRegression()
+poly_model.fit(X_poly_train, y_train)
+
+# Predict using the polynomial regression model
+y_pred_poly = poly_model.predict(X_poly_test)
+
+# Calculate the mean squared error for the polynomial model
+mse_poly = mean_squared_error(y_test, y_pred_poly)
+print(f"Mean Squared Error for Polynomial Linear Regression: {mse_poly:.2f}")
+
+# Compare models
+if mse_poly < mse_simple:
+    print("Polynomial Regression provides a better fit to the data.")
+else:
+    print("Simple Linear Regression provides a better fit to the data.")
+
+# Predict salaries for levels 11 and 12
+levels = np.array([[11], [12]])
+levels_poly = poly_features.transform(levels)
+
+salary_pred_simple = simple_model.predict(levels)
+salary_pred_poly = poly_model.predict(levels_poly)
+
+print(f"Predicted Salary for Level 11 (Simple Linear Regression): {salary_pred_simple[0]:.2f}")
+print(f"Predicted Salary for Level 11 (Polynomial Regression): {salary_pred_poly[0]:.2f}")
+
+print(f"Predicted Salary for Level 12 (Simple Linear Regression): {salary_pred_simple[1]:.2f}")
+print(f"Predicted Salary for Level 12 (Polynomial Regression): {salary_pred_poly[1]:.2f}")
+
+# Plot the results
+plt.scatter(X, y, color='red', label='Actual data')
+plt.plot(X, simple_model.predict(X), color='blue', label='Simple Linear Regression')
+plt.plot(X, poly_model.predict(poly_features.transform(X)), color='green', label='Polynomial Regression')
+plt.title('Salary vs Position Level')
+plt.xlabel('Position Level')  # Correct usage
+plt.ylabel('Salary')          # Correct usage
+plt.legend()
+plt.show()
+
+

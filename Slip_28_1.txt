@@ -1,0 +1,35 @@
+
+# Import necessary libraries
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, classification_report
+
+# 1. Load the 20 newsgroups dataset
+categories = None  # Set to None to use all 20 categories
+news_train = fetch_20newsgroups(subset='train', categories=categories)
+news_test = fetch_20newsgroups(subset='test', categories=categories)
+
+# 2. Preprocess the text data (convert to Bag-of-Words representation)
+#Bag of Words model is used to preprocess the text by converting it into a bag of word
+#s, which keeps a count of the total occurrences of most frequently used words.
+vectorizer = CountVectorizer()
+X_train = vectorizer.fit_transform(news_train.data)  # Convert the training data into a term-document matrix
+print(X_train)
+X_test = vectorizer.transform(news_test.data)  # Convert the test data into a term-document matrix
+
+# 3. Train the Multinomial Naive Bayes model
+model = MultinomialNB()
+model.fit(X_train, news_train.target)
+
+# 4. Make predictions on the test data
+predictions = model.predict(X_test)
+
+# 5. Evaluate the model
+accuracy = accuracy_score(news_test.target, predictions)
+report = classification_report(news_test.target, predictions, target_names=news_test.target_names)
+
+# Display results
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
+print("\nClassification Report:\n")
+print(report)

@@ -1,0 +1,70 @@
+#Requirements:
+TensorFlow: Make sure you have TensorFlow installed. You can install it with:
+bash
+Copy code
+pip install tensorflow
+
+# Import necessary libraries
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.datasets import mnist
+import matplotlib.pyplot as plt
+
+# Step 1: Load the MNIST dataset
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
+
+# Step 2: Preprocess the data
+# Reshape the data to add the channel dimension (28x28 grayscale image, so 1 channel)
+X_train = X_train.reshape(X_train.shape[0], 28, 28, 1).astype('float32')
+X_test = X_test.reshape(X_test.shape[0], 28, 28, 1).astype('float32')
+
+# Normalize the images to the range [0, 1]
+X_train /= 255
+X_test /= 255
+
+# Step 3: Build the CNN model
+model = Sequential()
+
+# Add a convolutional layer with 32 filters, kernel size of 3x3, and ReLU activation function
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(28, 28, 1)))
+
+# Add a max pooling layer with pool size 2x2
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Add another convolutional layer with 64 filters and ReLU activation
+model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+
+# Add another max pooling layer
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+# Flatten the output from the convolutional layers
+model.add(Flatten())
+
+# Add a dense fully connected layer with 128 neurons
+model.add(Dense(128, activation='relu'))
+
+# Output layer with 10 neurons (one for each digit 0-9) and softmax activation for classification
+model.add(Dense(10, activation='softmax'))
+
+# Step 4: Compile the model
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+# Step 5: Train the model on the MNIST training data
+model.fit(X_train, y_train, epochs=5, batch_size=64)
+
+# Step 6: Evaluate the model on the test data
+test_loss, test_acc = model.evaluate(X_test, y_test)
+print(f"Test accuracy: {test_acc * 100:.2f}%")
+
+# Step 7: Predict the digit for a given image (Here, we'll use the first test image)
+predictions = model.predict(X_test)
+
+# Get the predicted digit (index of the highest probability)
+predicted_digit = np.argmax(predictions[0])
+
+# Display the image and the predicted digit
+plt.imshow(X_test[0].reshape(28, 28), cmap='gray')
+plt.title(f"Predicted Digit: {predicted_digit}")
+plt.show()

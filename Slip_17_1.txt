@@ -1,0 +1,96 @@
+
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, VotingClassifier, StackingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Step 1: Load the Pima Indians Diabetes Database
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+columns = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome']
+df = pd.read_csv(url, header=None, names=columns)
+
+# Step 2: Split the data into features and target
+X = df.drop('Outcome', axis=1)
+y = df['Outcome']
+
+# Step 3: Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 4: Implement Ensemble Methods
+
+# 4.1 Bagging: Random Forest
+rf = RandomForestClassifier(n_estimators=100, random_state=42)
+rf.fit(X_train, y_train)
+y_pred_rf = rf.predict(X_test)
+rf_accuracy = accuracy_score(y_test, y_pred_rf)
+print("Random Forest Accuracy:", rf_accuracy)
+
+# 4.2 Boosting: AdaBoost
+ada = AdaBoostClassifier(n_estimators=100, random_state=42)
+ada.fit(X_train, y_train)
+y_pred_ada = ada.predict(X_test)
+ada_accuracy = accuracy_score(y_test, y_pred_ada)
+print("AdaBoost Accuracy:", ada_accuracy)
+
+# 4.3 Voting: Hard Voting with Logistic Regression, Decision Tree, and SVM
+log_clf = LogisticRegression(max_iter=1000, random_state=42)
+dt_clf = DecisionTreeClassifier(random_state=42)
+svm_clf = SVC(probability=True, random_state=42)
+
+voting_clf = VotingClassifier(
+    estimators=[('lr', log_clf), ('dt', dt_clf), ('svm', svm_clf)],
+    voting='hard'
+)
+voting_clf.fit(X_train, y_train)
+y_pred_voting = voting_clf.predict(X_test)
+voting_accuracy = accuracy_score(y_test, y_pred_voting)
+print("Voting Classifier Accuracy:", voting_accuracy)
+
+# 4.4 Stacking: Stacking with Logistic Regression as final estimator
+estimators = [
+    ('rf', RandomForestClassifier(n_estimators=100, random_state=42)),
+    ('ada', AdaBoostClassifier(n_estimators=100, random_state=42)),
+    ('svm', SVC(probability=True, random_state=42))
+]
+
+stacking_clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression(), cv=5)
+stacking_clf.fit(X_train, y_train)
+y_pred_stacking = stacking_clf.predict(X_test)
+stacking_accuracy = accuracy_score(y_test, y_pred_stacking)
+print("Stacking Classifier Accuracy:", stacking_accuracy)
+
+# Step 5: Display the results
+print("\n--- Model Comparison ---")
+print(f"Random Forest Accuracy: {rf_accuracy:.4f}")
+print(f"AdaBoost Accuracy: {ada_accuracy:.4f}")
+print(f"Voting Classifier Accuracy: {voting_accuracy:.4f}")
+print(f"Stacking Classifier Accuracy: {stacking_accuracy:.4f}")
+
+# Step 6: Classification Reports and Confusion Matrices
+print("\nRandom Forest Classification Report:")
+print(classification_report(y_test, y_pred_rf))
+
+print("\nAdaBoost Classification Report:")
+print(classification_report(y_test, y_pred_ada))
+
+print("\nVoting Classifier Classification Report:")
+print(classification_report(y_test, y_pred_voting))
+
+print("\nStacking Classifier Classification Report:")
+print(classification_report(y_test, y_pred_stacking))
+
+# Optional: Display confusion matrices if needed
+print("\nRandom Forest Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_rf))
+
+print("\nAdaBoost Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_ada))
+
+print("\nVoting Classifier Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_voting))
+
+print("\nStacking Classifier Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred_stacking))

@@ -1,0 +1,68 @@
+# Import necessary libraries
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+
+# Load the dataset (assuming the dataset is in a CSV file named 'diabetes.csv')
+# The dataset can be downloaded from: https://www.kaggle.com/uciml/pima-indians-diabetes-database
+url = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv"
+column_names = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome']
+df = pd.read_csv(url, header=None, names=column_names)
+
+# Separate features (X) and target (y)
+X = df.iloc[:, :-1].values
+y = df.iloc[:, -1].values
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Standardize the data (KNN performs better with standardized data)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Find the optimal value of K by evaluating accuracy for different values of K
+k_range = range(1, 21)
+k_scores = []
+
+for k in k_range:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    scores = cross_val_score(knn, X_train, y_train, cv=10, scoring='accuracy')
+    k_scores.append(scores.mean())
+
+# Plot the relationship between K and accuracy
+plt.plot(k_range, k_scores)
+plt.xlabel('Value of K for KNN')
+plt.ylabel('Cross-Validated Accuracy')
+plt.title('Finding Optimal K')
+plt.show()
+
+# Choose the optimal K (the one with the highest accuracy)
+optimal_k = k_range[np.argmax(k_scores)]
+print(f"Optimal value of K: {optimal_k}")
+
+# Train the KNN model with the optimal K
+knn = KNeighborsClassifier(n_neighbors=optimal_k)
+knn.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = knn.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy of KNN model with K={optimal_k}: {accuracy:.2f}")
+
+# Function to predict if a patient is diabetic based on input features
+def predict_diabetes(input_data):
+    input_data = scaler.transform([input_data])
+    prediction = knn.predict(input_data)
+    return prediction[0]
+
+# Example prediction (adjust input data to your needs)
+example_patient = [6, 148, 72, 35, 0, 33.6, 0.627, 50]
+diabetes_prediction = predict_diabetes(example_patient)
+print(f"Predicted Outcome: {'Diabetic (1)' if diabetes_prediction == 1 else 'Not Diabetic (0)'}")

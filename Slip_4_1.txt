@@ -1,0 +1,104 @@
+#generate csv file 
+
+import pandas as pd
+import numpy as np
+
+# Set random seed for reproducibility
+np.random.seed(42)
+
+# Generate synthetic data for Mall customers
+n = 500  # Number of customers
+
+# Generate random data for Age, Annual Income, and Spending Score
+age = np.random.randint(18, 70, size=n)  # Age between 18 and 70
+annual_income = np.random.randint(15, 150, size=n)  # Income between 15k and 150k
+spending_score = np.random.randint(1, 101, size=n)  # Spending Score between 1 and 100
+
+# Create a DataFrame
+data = pd.DataFrame({
+    'Age': age,
+    'Annual Income (k$)': annual_income,
+    'Spending Score (1-100)': spending_score
+})
+
+# Save to CSV
+data.to_csv('/content/mall_customers.csv', index=False)
+
+# Display the first few rows
+print(data.head())
+
+
+from google.colab import files
+files.download('/content/mall_customers.csv')
+
+
+# actual code 
+
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import silhouette_score
+
+# 1. Load the dataset
+# Assuming you have generated and saved the 'mall_customers.csv' as mentioned above
+data = pd.read_csv('/content/mall_customers.csv')
+
+# Display the first few rows of the dataset to understand the data structure
+print(data.head())
+
+# 2. Preprocess the data
+# We are selecting 'Age', 'Annual Income (k$)', and 'Spending Score (1-100)' columns for clustering
+X = data[['Age', 'Annual Income (k$)', 'Spending Score (1-100)']]
+
+# Standardizing the data (important for K-Means as it is sensitive to feature scaling)
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 3. Use the Elbow method to find the optimal number of clusters (k)
+wcss = []  # List to store the WCSS (Within-Cluster Sum of Squares) for each k
+k_values = range(1, 11)  # We will test k from 1 to 10
+
+# Loop through different k values and calculate WCSS
+for k in k_values:
+    kmeans = KMeans(n_clusters=k, random_state=42)  # Initialize the KMeans model with k clusters
+    kmeans.fit(X_scaled)  # Fit the model to the data
+    wcss.append(kmeans.inertia_)  # Append the WCSS value to the list
+
+# Plot the Elbow graph to visualize the optimal k
+plt.figure(figsize=(8, 6))
+plt.plot(k_values, wcss, marker='o', linestyle='--')  # Plot the WCSS values for different k values
+plt.title('Elbow Method to Determine Optimal K')
+plt.xlabel('Number of Clusters (k)')
+plt.ylabel('WCSS')
+plt.show()
+
+# 4. Apply K-Means with the optimal number of clusters (from the Elbow method)
+# In this case, let's assume k=5 based on the Elbow method's result
+optimal_k = 5
+kmeans = KMeans(n_clusters=optimal_k, random_state=42)  # Initialize KMeans with optimal_k clusters
+kmeans.fit(X_scaled)  # Fit the model to the scaled data
+
+# 5. Add the cluster labels back to the original data
+data['Cluster'] = kmeans.labels_
+
+# Display the data with the cluster labels
+print(data.head())
+
+# 6. Visualize the clusters using a scatter plot
+# We will use 'Age' and 'Spending Score (1-100)' for the scatter plot, with colors representing clusters
+plt.figure(figsize=(8, 6))
+plt.scatter(data['Age'], data['Spending Score (1-100)'], c=data['Cluster'], cmap='viridis', s=100)
+plt.title('Mall Customer Segments')
+plt.xlabel('Age')
+plt.ylabel('Spending Score (1-100)')
+plt.colorbar(label='Cluster')  # Add a color bar to show cluster numbers
+plt.show()
+
+# 7. Calculate the Silhouette Score to evaluate the clustering quality
+silhouette_avg = silhouette_score(X_scaled, kmeans.labels_)  # Compute silhouette score for clustering
+print(f'Silhouette Score: {silhouette_avg:.2f}')
+

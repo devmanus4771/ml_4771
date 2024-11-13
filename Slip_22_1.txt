@@ -1,0 +1,31 @@
+import pandas as pd 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+import numpy as np
+import matplotlib.pyplot as plt
+
+data=pd.read_csv('/content/Housing.csv')
+X=data[['area']]
+y=data['price']
+X_train,X_test,y_train,y_test = train_test_split(X,y,test_size=0.2,random_state=42)
+
+slr_model=LinearRegression()
+slr_model.fit(X_train,y_train)
+y_pred=slr_model.predict(X_test)
+
+print("mean absolute error:",metrics.mean_absolute_error(y_test,y_pred))
+print("mean squared error:",metrics.mean_squared_error(y_test,y_pred))
+print("root-mean squared error:",np.sqrt(metrics.mean_absolute_error(y_test,y_pred)))
+print("R-score:",metrics.r2_score(y_test,y_pred))
+
+plt.scatter(X_test,y_test,label='Data Point')
+plt.plot(X_test,y_pred,label='simple linear regression' ,color='red')
+plt.xlabel=('house area (sqrt)')
+plt.ylabel=('House Price ($)')
+plt.show()
+#plt.legend()
+
+new_data=2500
+new_price=slr_model.predict([[new_data]])
+print(f"predicted price for  {new_data} sqrt house is :${new_price[0]:.2f}")

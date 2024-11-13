@@ -1,0 +1,39 @@
+# Importing necessary libraries
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import load_iris
+import matplotlib.pyplot as plt
+
+# Step 1: Load the Iris dataset
+iris = load_iris()
+X = iris.data  # Features
+y = iris.target  # Labels
+
+# Step 2: Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Step 3: Apply PCA to reduce dimensions
+pca = PCA(n_components=2)  # Reduce to 2 principal components
+X_pca = pca.fit_transform(X_scaled)
+
+# Step 4: Create a DataFrame for the transformed data
+df_pca = pd.DataFrame(data=X_pca, columns=['PC1', 'PC2'])
+
+# Add target labels to the PCA DataFrame for plotting
+df_pca['Species'] = iris.target_names[y]
+
+# Step 5: Visualize the PCA results
+plt.figure(figsize=(8, 6))
+scatter = plt.scatter(df_pca['PC1'], df_pca['PC2'], c=y, cmap='viridis', edgecolor='k', s=100)
+plt.xlabel('Principal Component 1')
+plt.ylabel('Principal Component 2')
+plt.title('PCA of Iris Dataset')
+
+# Add a color bar with the species names
+plt.colorbar(scatter, label='Species')
+plt.show()
+
+# Step 6: Explain the variance explained by each component
+print(f"Explained variance ratio: {pca.explained_variance_ratio_}")

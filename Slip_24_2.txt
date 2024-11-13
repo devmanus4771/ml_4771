@@ -1,0 +1,71 @@
+#1. Sample UniversalBank.csv
+csv
+Copy code
+ID,Age,Experience,Income,CCAvg,Education,Mortgage,PersonalLoan,SecuritiesAccount,CDAccount,Online,CreditCard
+1,25,1,80000,10,1,0,0,1,0,1,1
+2,45,20,120000,20,1,1,1,1,1,0,0
+3,35,10,60000,15,1,0,1,0,0,1,1
+4,50,25,150000,30,2,0,0,1,0,0,0
+5,40,15,100000,25,1,1,1,1,1,0,0
+6,60,30,200000,40,2,1,1,1,1,1,1
+7,28,5,55000,12,1,0,0,1,0,1,1
+8,48,18,95000,18,2,1,0,1,0,0,0
+9,38,12,85000,22,1,0,1,0,0,1,1
+10,55,27,130000,28,1,1,1,1,1,0,0
+
+
+#main code
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Load dataset (replace 'UniversalBank.csv' with your actual file path)
+df = pd.read_csv('UniversalBank.csv')
+
+# Features (independent variables)
+X = df.drop(columns=['ID', 'PersonalLoan'])
+
+# Target variable (dependent variable)
+y = df['PersonalLoan']
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Create a Linear SVM model
+svm_model = SVC(kernel='linear', random_state=42)
+
+# Train the model
+svm_model.fit(X_train, y_train)
+
+# Predict on the test set
+y_pred = svm_model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy of Linear SVM model: {accuracy * 100:.2f}%")
+
+# Confusion matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+print("\nConfusion Matrix:")
+print(conf_matrix)
+
+# Classification report
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Visualize the confusion matrix
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['No', 'Yes'], yticklabels=['No', 'Yes'])
+plt.title('Confusion Matrix for Linear SVM')
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()

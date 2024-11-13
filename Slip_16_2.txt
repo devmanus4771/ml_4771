@@ -1,0 +1,40 @@
+import pandas as pd 
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the dataset
+data = pd.read_csv('/content/Housing.csv')  # Ensure your CSV file path is correct
+X = data[['area']]  # Assuming 'area' is a column in the dataset
+y = data['price']   # Assuming 'price' is the target column
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and train the Simple Linear Regression model
+slr_model = LinearRegression()
+slr_model.fit(X_train, y_train)
+
+# Predict the target variable on the test set
+y_pred = slr_model.predict(X_test)
+
+# Evaluate the model
+print("Mean Absolute Error:", metrics.mean_absolute_error(y_test, y_pred))
+print("Mean Squared Error:", metrics.mean_squared_error(y_test, y_pred))
+print("Root Mean Squared Error:", np.sqrt(metrics.mean_squared_error(y_test, y_pred)))  # Corrected RMSE
+print("R-Squared Score:", metrics.r2_score(y_test, y_pred))
+
+# Plotting the results
+plt.scatter(X_test, y_test, label='Data Points')
+plt.plot(X_test, y_pred, label='Simple Linear Regression', color='red')
+plt.xlabel('House Area (sq ft)')  # Corrected xlabel
+plt.ylabel('House Price ($)')  # Corrected ylabel
+plt.legend()
+plt.show()
+
+# Predict the price for a new data point (e.g., 2500 sq ft)
+new_data = 2500
+new_price = slr_model.predict([[new_data]])  # Reshape to match expected input
+print(f"Predicted price for {new_data} sq ft house is: ${new_price[0]:.2f}")

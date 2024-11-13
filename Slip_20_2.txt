@@ -1,0 +1,45 @@
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import tree
+import matplotlib.pyplot as plt
+
+# Step 1: Create a simple dataset
+data = {
+    'Outlook': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Rain', 'Overcast', 'Sunny', 'Sunny', 'Rain', 'Sunny', 'Overcast', 'Overcast', 'Rain'],
+    'Temperature': ['Hot', 'Hot', 'Hot', 'Mild', 'Mild', 'Cool', 'Cool', 'Mild', 'Mild', 'Mild', 'Cool', 'Mild', 'Mild', 'Hot'],
+    'Humidity': ['High', 'High', 'High', 'High', 'Low', 'Low', 'Low', 'High', 'Low', 'Low', 'High', 'Low', 'Low', 'High'],
+    'Wind': ['Weak', 'Strong', 'Weak', 'Weak', 'Weak', 'Weak', 'Strong', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak', 'Strong', 'Weak'],
+    'PlayTennis': ['No', 'No', 'Yes', 'Yes', 'Yes', 'No', 'Yes', 'No', 'Yes', 'Yes', 'Yes', 'Yes', 'Yes', 'No']
+}
+
+# Step 2: Convert the dataset to a pandas DataFrame
+df = pd.DataFrame(data)
+
+# Step 3: Convert categorical values to numeric (for training the model)
+df['Outlook'] = df['Outlook'].map({'Sunny': 0, 'Overcast': 1, 'Rain': 2})
+df['Temperature'] = df['Temperature'].map({'Hot': 0, 'Mild': 1, 'Cool': 2})
+df['Humidity'] = df['Humidity'].map({'High': 0, 'Low': 1})
+df['Wind'] = df['Wind'].map({'Weak': 0, 'Strong': 1})
+df['PlayTennis'] = df['PlayTennis'].map({'No': 0, 'Yes': 1})
+
+# Step 4: Define features (X) and target (y)
+X = df[['Outlook', 'Temperature', 'Humidity', 'Wind']]
+y = df['PlayTennis']
+
+# Step 5: Train a Decision Tree classifier
+clf = DecisionTreeClassifier(criterion='entropy')  # Using Entropy for Information Gain
+clf = clf.fit(X, y)
+
+# Step 6: Visualize the Decision Tree
+plt.figure(figsize=(10, 8))
+tree.plot_tree(clf, filled=True, feature_names=X.columns, class_names=['No', 'Yes'], rounded=True)
+plt.title("Decision Tree - Play Tennis Prediction")
+plt.show()
+
+# Step 7: Predict whether to play tennis based on a new set of conditions
+# Example: Outlook = Sunny, Temperature = Hot, Humidity = High, Wind = Weak
+new_data = pd.DataFrame([[0, 0, 0, 0]], columns=['Outlook', 'Temperature', 'Humidity', 'Wind'])
+prediction = clf.predict(new_data)
+result = 'Play Tennis' if prediction[0] == 1 else 'Do not Play Tennis'
+
+print(f"Prediction for the new conditions (Sunny, Hot, High Humidity, Weak Wind): {result}")

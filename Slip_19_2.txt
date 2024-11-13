@@ -1,0 +1,75 @@
+#Weather Forecast Dataset Example:
+csv
+Copy code
+Temperature,Humidity,Wind,Outlook,PlayTennis
+Hot,High,Strong,Sunnny,No
+Mild,Low,Weak,Overcast,Yes
+Cool,High,Strong,Rainy,No
+Mild,Low,Weak,Sunnny,Yes
+Hot,High,Weak,Overcast,Yes
+Cool,High,Weak,Rainy,No
+Mild,High,Weak,Sunnny,Yes
+Mild,Low,Strong,Overcast,Yes
+Hot,Low,Strong,Rainy,No
+Cool,Low,Weak,Sunnny,No
+
+
+#main code
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Step 1: Load the dataset
+data = {
+    'Temperature': ['Hot', 'Mild', 'Cool', 'Mild', 'Hot', 'Cool', 'Mild', 'Mild', 'Hot', 'Cool'],
+    'Humidity': ['High', 'Low', 'High', 'Low', 'High', 'High', 'High', 'Low', 'Low', 'Low'],
+    'Wind': ['Strong', 'Weak', 'Strong', 'Weak', 'Weak', 'Weak', 'Weak', 'Strong', 'Strong', 'Weak'],
+    'Outlook': ['Sunny', 'Overcast', 'Rainy', 'Sunny', 'Overcast', 'Rainy', 'Sunny', 'Overcast', 'Rainy', 'Sunny'],
+    'PlayTennis': ['No', 'Yes', 'No', 'Yes', 'Yes', 'No', 'Yes', 'Yes', 'No', 'No']
+}
+
+df = pd.DataFrame(data)
+
+# Step 2: Preprocess the data
+# Convert categorical values into numeric using Label Encoding
+le = LabelEncoder()
+
+df['Temperature'] = le.fit_transform(df['Temperature'])
+df['Humidity'] = le.fit_transform(df['Humidity'])
+df['Wind'] = le.fit_transform(df['Wind'])
+df['Outlook'] = le.fit_transform(df['Outlook'])
+df['PlayTennis'] = le.fit_transform(df['PlayTennis'])
+
+# Step 3: Split the data into features (X) and target (y)
+X = df[['Temperature', 'Humidity', 'Wind', 'Outlook']]
+y = df['PlayTennis']
+
+# Step 4: Split the dataset into training and testing data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 5: Create and train the Naive Bayes model
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# Step 6: Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Step 7: Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy of Naive Bayes classifier: {accuracy * 100:.2f}%")
+
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+# Visualize the confusion matrix
+plt.figure(figsize=(6, 4))
+ax = sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['No', 'Yes'], yticklabels=['No', 'Yes'])
+ax.set_title('Confusion Matrix for Naive Bayes')
+ax.set_xlabel('Predicted')
+ax.set_ylabel('Actual')
+plt.show()

@@ -1,0 +1,78 @@
+#csv file --- save in text editor as .csv 
+
+ID,Age,Experience,Income,CreditScore,Family,CCAge,Education,Mortgage,Personal Loan,CCAvg,Online,Location
+1,25,1,49,690,4,4,1,0,0,0.25,1,1
+2,45,20,90,720,3,3,2,0,0,1.25,1,1
+3,35,12,75,670,4,2,1,1,0,0.50,0,0
+4,50,30,120,800,3,4,2,1,1,2.75,1,1
+5,23,3,45,710,4,3,2,0,0,0.10,0,1
+6,40,15,95,735,3,4,1,0,0,1.50,1,0
+7,55,35,130,750,2,5,2,0,1,3.00,1,0
+8,60,40,150,780,3,5,1,1,1,2.25,0,0
+9,30,6,60,650,5,2,1,0,0,0.75,1,1
+10,38,16,85,700,2,3,2,1,0,1.00,0,1
+
+
+
+#main code 
+
+
+# Importing necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Step 1: Load the UniversalBank dataset
+# Assuming the dataset 'UniversalBank.csv' is in the current directory
+df = pd.read_csv('UniversalBank.csv')
+
+# Step 2: Preprocess the data
+
+# Display the first few rows to understand the structure of the dataset
+print(df.head())
+
+# Check for any missing values
+print(df.isnull().sum())
+
+# We can drop non-useful columns like 'ID' and 'ZIP Code'
+df = df.drop(['ID', 'ZIP Code'], axis=1)
+
+# If any categorical columns exist, convert them into numerical values using LabelEncoder
+label_encoder = LabelEncoder()
+
+# Example: Encoding 'Education' (if it's a categorical column)
+if 'Education' in df.columns:
+    df['Education'] = label_encoder.fit_transform(df['Education'])
+
+# Assuming 'Personal Loan' is the target variable
+X = df.drop('Personal Loan', axis=1)  # Features
+y = df['Personal Loan']  # Target variable
+
+# Step 3: Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 4: Standardize the features using StandardScaler
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Step 5: Train the Linear SVM model
+svm_model = SVC(kernel='linear', random_state=42)
+svm_model.fit(X_train_scaled, y_train)
+
+# Step 6: Make predictions on the test data
+y_pred = svm_model.predict(X_test_scaled)
+
+# Step 7: Evaluate the model's performance
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+# Displaying the results
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("\nConfusion Matrix:")
+print(conf_matrix)
+print("\nClassification Report:")
+print(class_report)

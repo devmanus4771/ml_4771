@@ -1,0 +1,30 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+
+# Step 1: Create a custom dataset with some null values
+data = {
+    'Name': ['John', 'Alice', 'Bob', np.nan, 'Charlie', 'David'],
+    'Age': [23, 25, np.nan, 30, 22, 29],
+    'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', np.nan, 'Phoenix'],
+    'Salary': [50000, 60000, 55000, 65000, 58000, np.nan]
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+# Step 2: Display the original dataset
+print("Original Dataset:")
+print(df)
+
+# Step 3: Check for null values in the dataset
+null_values = df.isnull().sum()
+print("\nNull Values in each column:")
+print(null_values)
+
+# Step 4: Remove rows with any null values
+df_cleaned = df.dropna()
+
+# Step 5: Display the cleaned dataset
+print("\nDataset after removing rows with null values:")
+print(df_cleaned)

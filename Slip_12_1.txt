@@ -1,0 +1,46 @@
+# Importing necessary libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+# Step 1: Load the Iris dataset
+iris = load_iris()
+X = iris.data  # Features (independent variables)
+y = iris.target  # Target variable (species)
+
+# Step 2: Split the data into training and testing sets (80% training, 20% testing)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 3: Initialize KNN Classifier with k=3 (you can adjust k)
+knn = KNeighborsClassifier(n_neighbors=3)
+
+# Step 4: Train the model using the training data
+knn.fit(X_train, y_train)
+
+# Step 5: Make predictions on the test set
+y_pred = knn.predict(X_test)
+
+# Step 6: Evaluate the model's performance
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+
+# Step 7: Print the results
+print(f"Accuracy: {accuracy * 100:.2f}%")
+print("Confusion Matrix:")
+print(conf_matrix)
+
+# Optional: Visualizing the decision boundary (for two features: sepal length and sepal width)
+fig, ax = plt.subplots(figsize=(8, 6))
+scatter = ax.scatter(X_test[:, 0], X_test[:, 1], c=y_test, cmap='viridis', edgecolor='k', s=100)
+ax.set_title("K-Nearest Neighbors (KNN) - Decision Boundary")
+ax.set_xlabel('Sepal Length (cm)')
+ax.set_ylabel('Sepal Width (cm)')
+
+# Adding a color bar to indicate different species
+plt.colorbar(scatter, ax=ax, label='Species')
+
+plt.show()

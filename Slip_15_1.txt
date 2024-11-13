@@ -1,0 +1,64 @@
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Step 1: Load the dataset
+# For simplicity, we'll create a synthetic dataset with random house prices and features.
+np.random.seed(42)
+data_size = 1000
+
+# Generating random features (e.g., size in square feet, number of bedrooms, etc.)
+X = np.random.rand(data_size, 5) * 100  # 5 features
+
+# Generating random house prices
+prices = np.random.rand(data_size) * 500000  # House prices between 0 and 500,000
+
+# Calculate the average price
+average_price = np.mean(prices)
+
+# Classify as 1 if the price is above the average, otherwise 0
+y = (prices > average_price).astype(int)
+
+# Step 2: Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Step 3: Feature Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 4: Build the ANN model
+model = Sequential()
+
+# Input layer and first hidden layer with ReLU activation
+model.add(Dense(units=16, input_shape=(X_train.shape[1],), activation='relu'))
+
+# Second hidden layer with ReLU activation
+model.add(Dense(units=8, activation='relu'))
+
+# Output layer with Sigmoid activation (for binary classification)
+model.add(Dense(units=1, activation='sigmoid'))
+
+# Step 5: Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Step 6: Train the model
+model.fit(X_train, y_train, epochs=100, batch_size=32, verbose=1)
+
+# Step 7: Evaluate the model
+loss, accuracy = model.evaluate(X_test, y_test)
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
+
+# Step 8: Make predictions
+predictions = model.predict(X_test)
+predictions = (predictions > 0.5).astype(int)
+
+# Step 9: Display some predictions
+print("Predictions (1 = Above Average, 0 = Below Average):")
+print(predictions[:10].flatten())
+print("Actual values:")
+print(y_test[:10])

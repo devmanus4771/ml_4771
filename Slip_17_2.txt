@@ -1,0 +1,36 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load dataset
+data = pd.read_csv('/content/Housing.csv')
+
+# Define features (X) and target (y)
+X = data[['area', 'bedrooms', 'bathrooms']]  # Independent variables
+y = data['price']  # Dependent variable
+
+# Split data into training (80%) and testing sets (20%)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create Multiple Linear Regression model
+mlr_model = LinearRegression()
+
+# Train the model
+mlr_model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = mlr_model.predict(X_test)
+
+# Evaluate model
+print("Mean Absolute Error:", metrics.mean_absolute_error(y_test, y_pred))
+print("Mean Squared Error:", metrics.mean_squared_error(y_test, y_pred))
+print("Root Mean Squared Error:", np.sqrt(metrics.mean_squared_error(y_test, y_pred)))
+print("R-Squared:", metrics.r2_score(y_test, y_pred))
+
+
+plt.scatter(y_test, y_pred)
+plt.title("Multiple Linear Regression")
+plt.show()

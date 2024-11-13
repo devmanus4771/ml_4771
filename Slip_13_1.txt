@@ -1,0 +1,99 @@
+#!pip uninstall matplotlib -y
+#!pip install matplotlib -- if error occur then run this
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import yfinance as yf
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Dropout
+
+# 1. Download Google stock data
+stock_data = yf.download('GOOGL', start='2010-01-01', end='2023-12-31')
+
+# 2. Preprocess the data
+# Use 'Adj Close' as it accounts for splits and dividends
+data = stock_data[['Adj Close']]
+data['Return'] = data['Adj Close'].pct_change()
+data = data.dropna()
+
+# 3. Normalize the stock data
+scaler = MinMaxScaler(feature_range=(0, 1))
+scaled_data = scaler.fit_transform(data['Adj Close'].values.reshape(-1, 1))
+
+# 4. Prepare the data for RNN model
+def create_dataset(data, time_step=60):
+    X, y = [], []
+    for i in range(time_step, len(data)):
+        X.append(data[i-time_step:i, 0])
+        y.append(1 if data[i, 0] > data[i-1, 0] else 0)  # 1 for increase, 0 for decrease
+    return np.array(X), np.array(y)
+
+# Create dataset
+time_step = 60
+X, y = create_dataset(scaled_data, time_step)
+X = X.reshape(X.shape[0], X.shape[1], 1)
+
+# 5. Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 6. Build the RNN model (LSTM)
+model = Sequential()
+
+# Adding LSTM layer with 50 units and Dropout to avoid overfitting
+model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+model.add(Dropout(0.2))
+
+# Adding another LSTM layer
+model.add(LSTM(units=50, return_sequences=False))
+model.add(Dropout(0.2))
+
+# Adding the output layer
+model.add(Dense(units=1, activation='sigmoid'))  # Sigmoid for binary classification (increase or decrease)
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# 7. Train the model
+history = model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+
+# 8. Evaluate the model
+train_accuracy = model.evaluate(X_train, y_train)
+test_accuracy = model.evaluate(X_test, y_test)
+
+print(f"Train Accuracy: {train_accuracy[1]:.4f}")
+print(f"Test Accuracy: {test_accuracy[1]:.4f}")
+
+# 9. Visualize training and validation loss
+plt.figure(figsize=(10, 6))
+plt.plot(history.history['loss'], label='Training Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Model Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# 10. Predict on the test set and visualize the results
+predictions = model.predict(X_test)
+predictions = (predictions > 0.5)  # Convert probabilities to binary (0 or 1)
+
+# 11. Create a DataFrame for comparison of actual vs predicted
+test_dates = stock_data.index[-len(y_test):]
+results = pd.DataFrame({'Date': test_dates, 'Actual': y_test, 'Predicted': predictions.flatten()})
+results['Date'] = pd.to_datetime(results['Date'])
+
+# 12. Plot the actual vs predicted trends
+plt.figure(figsize=(10, 6))
+plt.plot(results['Date'], results['Actual'], label='Actual Trend', color='blue')
+plt.plot(results['Date'], results['Predicted'], label='Predicted Trend', color='red')
+plt.title('Google Stock Price Prediction: Increase/Decrease')
+plt.xlabel('Date')
+plt.ylabel('Trend (0: Decrease, 1: Increase)')
+plt.legend()
+plt.show()
+
+

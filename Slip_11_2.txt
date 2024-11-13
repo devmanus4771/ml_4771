@@ -1,0 +1,62 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+import urllib.request
+
+
+# Download the dataset (if not already present)
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00267/data_banknote_authentication.txt"
+urllib.request.urlretrieve(url, "banknotes.csv")
+
+# Load the dataset
+df = pd.read_csv("banknotes.csv", header=None)
+
+# Assign column names (as per the dataset)
+columns = ['variance', 'skewness', 'curtosis', 'entropy', 'label']
+df.columns = columns
+
+# Display the first few rows of the dataset
+print(df.head())
+
+# Define features (X) and target variable (y)
+X = df.drop('label', axis=1)  # Features: all except 'label'
+y = df['label']               # Target: genuine (1) or forged (0)
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize and train the Decision Tree model
+model = DecisionTreeClassifier(random_state=42, max_depth=5, min_samples_split=10)
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Accuracy: {accuracy:.2f}")
+
+print("Classification Report:")
+print(classification_report(y_test, y_pred))
+
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(conf_matrix)
+
+# Plotting the confusion matrix
+# Create the plot
+fig, ax = plt.subplots(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Forged', 'Genuine'], yticklabels=['Forged', 'Genuine'], ax=ax)
+
+# Use ax.set_xlabel and ax.set_ylabel for labeling
+ax.set_xlabel('Predicted')
+ax.set_ylabel('Actual')
+ax.set_title('Confusion Matrix')
+
+plt.show()
+
+
